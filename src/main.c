@@ -54,20 +54,64 @@ void draw(t_env *env)
 
 		if (env->p1->rdx < 0)
 		{
-			stepx = ;
+			env->p1->stepx = -1;
+			env->p1->sdx = (env->p1->rpx - env->p1->mapx) * env->p1->ddx;
 		}
 		else
 		{
-
+			env->p1->stepx = 1;
+			env->p1->sdx = (env->p1->mapx + 1.0 - env->p1->rpx) * env->p1->ddx;
 		}
 		if (env->p1->rdy < 0)
 		{
-
+			env->p1->stepy = -1;
+			env->p1->sdy = (env->p1->rpy - env->p1->mapy) * env->p1->ddy;
 		}
 		else
 		{
-
+			env->p1->stepy = 1;
+			env->p1->sdy = (env->p1->mapy + 1.0 - env->p1->rpy) * env->p1->ddy;
 		}
+
+		// DDA
+		while (hit == 0)
+		{
+			// jump to next map square, OR in x-dir, OR in y-dir
+			if (env->p1->sdx < env->p1->sdy)
+			{
+				env->p1->sdx += env->p1->ddx;
+				env->p1->mapx += env->p1->stepx;
+				side = 0;
+			}
+			else
+			{
+				env->p1->sdy += env->p1->ddy;
+				env->p1->mapy += env->p1->stepy;
+				side = 1;
+			}
+			// check if ray has hit a wall
+			if (env->map[env->p1->mapx][env->p1->mapy] == 1)
+				hit = 1;
+		}
+
+		// distance projected on cam
+		if (side == 0)
+			env->p1->pwd = (env->p1->mapx - env->p1->rpx + (1 - env->p1->stepx) / 2) / env->p1->rdx;
+		else
+			env->p1->pwd = (env->p1->mapy - env->p1->rpy + (1 - env->p1->stepy) / 2) / env->p1->rdy;
+
+		// height of line to draw
+		env->p1->lh = (int)(WIN_HGT / env->p1->pwd);
+
+		// calc low and high pixel to fill vert line
+		env->p1->dstart = (-(env->p1->lh)) / 2 + WIN_HGT / 2;
+		if (env->p1->dstart < 0)
+			env->p1->dstart = 0;
+		env->p1->dend = (env->p1->lh / 2 + WIN_HGT / 2);
+		if (env->p1->dend >= WIN_HGT)
+			env->p1->dend = WIN_HGT - 1;
+
+		// choose wall color
 
 		x++;
 	}

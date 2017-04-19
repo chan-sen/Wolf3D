@@ -24,54 +24,67 @@ typedef struct	s_;
 
 typedef struct	s_img
 {
-	void 					*img;
-	char					*data;
-	int						height;
-	int						width;
-	int						sizeline;
-	int						bits;
-	int						endian;
-}								t_img;
+	void 		*img;
+	char		*data;
+	int			height;
+	int			width;
+	int			sizeline;
+	int			bits;
+	int			endian;
+}				t_img;
 
 
 typedef struct	s_p1
 {
-	double				posx;
-	double				posy;
-	double				dx;
-	double				dy;
-	double				plnx;
-	double				plny;
-	double				camx;
-	double				rpx;
-	double				rpy;
-	double				rdx;
-	double				rdy;
-	int						mapx;
-	int						mapy;
+	double		posx; // player position
+	double		posy;
+	double		dx; // direction vector
+	double		dy;
+	double		plnx; // plane vector
+	double		plny;
+	double		camx; // x cord in cam space for vert line drawing
+	double		rpx; // ray position
+	double		rpy;
+	double		rdx; // ray dir
+	double		rdy;
 
-}								t_p1;
+
+	int			mapx; // map int cord for current box
+	int			mapy;
+	int			stepx; // for direction to step in (+1 or -1)
+	int			stepy;
+	double		sdx; // side dist
+	double		sdy;
+	double		ddx; // delta dist
+	double		ddy;
+	double		pwd; // perpendicular wall dist
+
+	int			lh; // line height
+	int			dstart;
+	int			dend;
+
+}				t_p1;
 
 typedef struct	s_keys
 {
-	int						spc;
-	int						w;
-	int						a;
-	int						s;
-	int						d;
-}								t_keys;
+	int			spc;
+	int			w;
+	int			a;
+	int			s;
+	int			d;
+}				t_keys;
 
 typedef struct	s_env
 {
-	void					*mlx;
-	void 					*win;
-	t_keys				*keys;
-	t_p1					*p1;
-	t_map					*map;
-	t_img					image;
-	double				oldtime;
-	double				time;
-	double				frametime;
+	void		*mlx;
+	void 		*win;
+	t_keys		*keys;
+	t_p1		*p1;
+	int			**map;
+	t_img		image;
+	double		oldtime;
+	double		time;
+	double		frametime;
 
 }				t_env;
 
