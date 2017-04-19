@@ -18,6 +18,21 @@ void image_to(t_env *env)
 
 }
 
+int		wall_color(int gridnum, int side)
+{
+	int	color;
+
+	color = 0;
+	if (gridnum == 1)
+	{
+		color = 0xFFFFFF;
+		if (side == 1)
+			color = color / 2;
+	}
+	return (color);
+}
+
+
 void draw(t_env *env)
 {
 	int		x;
@@ -112,10 +127,23 @@ void draw(t_env *env)
 			env->p1->dend = WIN_HGT - 1;
 
 		// choose wall color
+		env->p1->color = wall_color(env->map[env->p1->mapx][env->p1->mapy]);
+
+
+		// draw vert line
+
+		drawline(env, line(pointa(x, env->p1->dstart), pointb(x, env->p1->dend)),
+			env->p1->color);
 
 		x++;
 	}
+
+	env->p1->mvspd = (env->frametime * 5.0);
+	env->p1->rtspd = (env->frametime * 3.0);
+
 }
+
+
 
 int	wolf_hook(t_env *env)
 {

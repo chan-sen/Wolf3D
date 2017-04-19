@@ -63,6 +63,12 @@ typedef struct	s_p1
 	int			dstart;
 	int			dend;
 
+	int			color;
+
+	// move and rot speed
+	double		mvspd;
+	double		rtspd;
+
 }				t_p1;
 
 typedef struct	s_keys
