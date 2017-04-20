@@ -13,14 +13,40 @@
 #ifndef WOLF3D_H
 # define WOLF3D_H
 
-# include "./../libft/includes"
+# include "./../libft/libft.h"
 # include "./../minilibx/mlx.h"
 
 # include <fcntl.h>
 # include <math.h>
 # include <time.h>
 
-typedef struct	s_;
+
+# include <stdio.h>
+
+# define	WIN_WDT	600
+# define	WIN_HGT	600
+
+typedef struct		s_point
+{
+	float			x;
+	float			y;
+}					t_point;
+
+typedef struct		s_line
+{
+	int				x1;
+	int				y1;
+	int				x2;
+	int				y2;
+	float			d;
+	int				dx;
+	int				dy;
+	int				xi;
+	int				yi;
+	int				e;
+	int				etmp;
+}					t_line;
+
 
 typedef struct	s_img
 {
@@ -86,13 +112,21 @@ typedef struct	s_env
 	void 		*win;
 	t_keys		*keys;
 	t_p1		*p1;
-	int			**map;
+	int		**map;
 	t_img		image;
 	double		oldtime;
 	double		time;
 	double		frametime;
 
 }				t_env;
+
+int		**testmap(int fd);
+
+void		put_image_pixel(t_img image, int x, int y, int color);
+t_point		point(float x, float y);
+t_line		line(t_point p1, t_point p2);
+void		drawline(t_env *map, t_line line, int color);
+
 
 
 #endif
