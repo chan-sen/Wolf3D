@@ -113,6 +113,8 @@ typedef struct	s_env
 	t_keys		*keys;
 	t_p1		*p1;
 	int		**map;
+	int			mx;
+	int			my;
 	t_img		image;
 	double		oldtime;
 	double		time;
@@ -120,7 +122,7 @@ typedef struct	s_env
 
 }				t_env;
 
-int		**testmap(int fd);
+int		**testmap(int fd, int *x, int *y);
 
 void		put_image_pixel(t_img image, int x, int y, int color);
 t_point		point(float x, float y);

@@ -24,16 +24,21 @@ t_img		make_img(void *mlx)
 
 void image_to(t_env *env)
 {
+	printf("supbebe\n");
 	env->oldtime = env->time;
 	env->time = clock();
 	env->frametime = (env->time - env->oldtime) / CLOCKS_PER_SEC;
+	printf("timeframed\n");
 	mlx_clear_window(env->mlx, env->win);
+	printf("windowclear\n");
 	if (env->image.img)
-		mlx_destroy_image(env->mlx, env->image.img);
-	mlx_put_image_to_window(env->mlx, env->win, env->image.img, 0, 0);
+		mlx_put_image_to_window(env->mlx, env->win, env->image.img, 0, 0);
+	printf("imageput\n");
 	mlx_string_put(env->mlx, env->win, 0, 0, 0xFFFFFF,
 		ft_itoa((int)(1 / env->frametime)));
+	printf("fps put\n");
 	env->image = make_img(env->mlx);
+	printf("imagemade\n");
 	env->p1->mvspd = (env->frametime * 5.0);
 	env->p1->rtspd = (env->frametime * 3.0);
 
@@ -218,7 +223,9 @@ void r_rotate(t_env *env)
 
 int	wolf_hook(t_env *env)
 {
+	printf("HAI\n\n\n\n");
 	image_to(env);
+	printf("ello\n\n");
 	draw(env);
 	if (env->keys->w)
 		forward(env);
@@ -235,6 +242,7 @@ int	wolf_hook(t_env *env)
 
 int		key_press(int key, t_env *env)
 {
+	printf("key press: %d", key);
 	if (key == 49)
 		env->keys->spc = 1;
 	if (key == 13)
@@ -250,6 +258,11 @@ int		key_press(int key, t_env *env)
 
 int		key_release(int	key, t_env *env)
 {
+	if (key == 53)
+	{
+		mlx_destroy_window(env->mlx, env->win);
+		exit(0);
+	}
 	if (key == 49)
 		env->keys->spc = 0;
 	if (key == 13)
@@ -267,6 +280,8 @@ void wolfy(t_env *env)
 {
 	env->mlx = mlx_init();
 	env->win = mlx_new_window(env->mlx, WIN_WDT, WIN_HGT, "chansen - Wolf3d");
+	printf("heyeyeyeye\n\n");
+	printf("key: %d", env->keys->w);
 	mlx_loop_hook(env->mlx, wolf_hook, env);
 	mlx_hook(env->win, 2, 0, key_press, env);
 	mlx_hook(env->win, 3, 0, key_release, env);
@@ -288,45 +303,46 @@ t_keys	*keyzero(void)
 	return (keys);
 }
 
-void checkx(int **map, t_p1 *p1, int x, int y)
+
+void checkx(int **map, t_p1 **p1, int x, int y)
 {
 	if (map[y][x] == 2)
 	{
-		p1->dx = 0.0;
-		p1->plnx = 0.66;
+		(*p1)->dx = 0.0;
+		(*p1)->plnx = 0.66;
 	}
 	if (map[y][x] == 3)
 	{
-		p1->dx = -1.0;
-		p1->plnx = 0;
+		(*p1)->dx = -1.0;
+		(*p1)->plnx = 0;
 	}
 	if (map[y][x] == 4)
 	{
-		p1->dx = 0.0;
-		p1->plnx = -0.66;
+		(*p1)->dx = 0.0;
+		(*p1)->plnx = -0.66;
 	}
 	if (map[y][x] == 5)
 	{
-		p1->dx = 1.0;
-		p1->plnx = 0;
+		(*p1)->dx = 1.0;
+		(*p1)->plnx = 0;
 	}
 }
 
-void			findxstart(int **map, t_p1 *p1)
+void			findxstart(int **map, t_p1 **p1, int mx, int my)
 {
 	int			x;
 	int			y;
 
 	x = 0;
 	y = 0;
-	while (map[y])
+	while (y < my)
 	{
-		while (map[y][x])
+		while (x < mx)
 		{
 			if (map[y][x] >= 2 && map[y][x] <= 5)
 			{
 				checkx(map, p1, x, y);
-				(p1->posx) = x;
+				((*p1)->posx) = x;
 			}
 			x++;
 		}
@@ -334,45 +350,45 @@ void			findxstart(int **map, t_p1 *p1)
 	}
 }
 
-void checky(int **map, t_p1 *p1, int x, int y)
+void checky(int **map, t_p1 **p1, int x, int y)
 {
 	if (map[y][x] == 2)
 	{
-		p1->dy = -1;
-		p1->plny = 0;
+		(*p1)->dy = -1;
+		(*p1)->plny = 0;
 	}
 	if (map[y][x] == 3)
 	{
-		p1->dy = 0;
-		p1->plny = 0.66;
+		(*p1)->dy = 0;
+		(*p1)->plny = 0.66;
 	}
 	if (map[y][x] == 4)
 	{
-		p1->dy = 1;
-		p1->plny = 0;
+		(*p1)->dy = 1;
+		(*p1)->plny = 0;
 	}
 	if (map[y][x] == 5)
 	{
-		p1->dy = 0;
-		p1->plny = -0.66;
+		(*p1)->dy = 0;
+		(*p1)->plny = -0.66;
 	}
 }
 
-void		findystart(int **map, t_p1 *p1)
+void		findystart(int **map, t_p1 **p1, int mx, int my)
 {
 	int			x;
 	int			y;
 
 	x = 0;
 	y = 0;
-	while (map[y])
+	while (y < my)
 	{
-		while (map[y][x])
+		while (x < mx)
 		{
 			if (map[y][x] >= 2 && map[y][x] <= 5)
 			{
 				checky(map, p1, x, y);
-				(p1->posy) = y;
+				((*p1)->posy) = y;
 			}
 			x++;
 		}
@@ -380,7 +396,7 @@ void		findystart(int **map, t_p1 *p1)
 	}
 }
 
-t_p1			*player(int **map)
+t_p1			*player(int **map, int x, int y)
 {
 	t_p1		*p1;
 
@@ -390,7 +406,7 @@ t_p1			*player(int **map)
 	printf("%p\n", p1);
 	printf("%p\n", &p1);
 	p1->posx = 0;
-	p1->posx = 0;
+	p1->posy = 0;
 	p1->dx = 0;
 	p1->dy = 0;
 	p1->plnx = 0;
@@ -417,38 +433,34 @@ t_p1			*player(int **map)
 	p1->dend = 0;
 
 
-	findxstart(map, p1);
-	findystart(map, p1);
+	findxstart(map, &p1, x, y);
+	findystart(map, &p1, x, y);
 	printf("HI\n");
 	return (p1);
 }
 
-int		**testmap(int fd)
+int		**testmap(int fd, int *x, int *y)
 {
 	int		**worldmap;
 	char	**split;
 	char	*line;
 	int		w;
 	int		h;
-	int		i;
-	int		j;
 
 	w = 12;
 	h = 12;
-	i = 0;
-	j = 0;
 	worldmap = (int **)ft_memalloc(sizeof(int *) * h);
 	while (get_next_line(fd, &line))
 	{
-		j = 0;
+		(*x) = 0;
 		split = ft_strsplit(line, ' ');
-		worldmap[i] = (int *)ft_memalloc(sizeof(int) * 24);
-		while (split[j])
+		worldmap[(*y)] = (int *)ft_memalloc(sizeof(int) * 24);
+		while (split[(*x)] != '\0')
 		{
-			worldmap[i][j]= ft_atoi(split[j]);
-			j++;
+			worldmap[(*y)][(*x)]= ft_atoi(split[(*x)]);
+			(*x)++;
 		}
-		i++;
+		(*y)++;
 	}
 	return (worldmap);
 }
@@ -457,13 +469,19 @@ int		**testmap(int fd)
 t_env	*make_env(void)
 {
 	t_env		*env;
+	int			x;
+	int			y;
 
+	x = 0;
+	y = 0;
 	if (!(env = (t_env *)malloc(sizeof(t_env))))
 		exit_hook(env);
 	env->keys = keyzero();
-	env->map = testmap(open("./maps/map1", O_RDONLY));
-	env->p1 = player(env->map);
+	env->map = testmap(open("./maps/map1", O_RDONLY), &x, &y);
+	env->mx = x;
+	env->my = y;
 	printf("hello%d\n\n", env->map[0][0]);
+	env->p1 = player(env->map, env->mx, env->my);
 	env->oldtime = 0;
 	env->time = 0;
 	env->frametime = 0;
