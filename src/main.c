@@ -3,6 +3,50 @@
 #include "./../includes/wolf3d.h"
 
 
+double			findystart(int **map, int mx, int my)
+{
+	int			x;
+	int			y;
+
+	x = 0;
+	y = 0;
+	while (y < my)
+	{
+		while (x < mx)
+		{
+			if (map[y][x] >= 2 && map[y][x] <= 5)
+			{
+
+				return ((double)y);
+			}
+			x++;
+		}
+		y++;
+	}
+	return (0.0);
+}
+
+
+double		findxstart(int **map, int mx, int my)
+{
+	int			x;
+	int			y;
+
+	x = 0;
+	y = 0;
+	while (y < my)
+	{
+		while (x < mx)
+		{
+			if (map[y][x] >= 2 && map[y][x] <= 5)
+				return ((double)x);
+			x++;
+		}
+		y++;
+	}
+	return (0.0);
+}
+
 int		exit_hook(t_env *env)
 {
 	free(env);
@@ -66,23 +110,36 @@ void draw(t_env *env)
 	x = 0;
 	while (x < WIN_WDT)
 	{
-		env->p1->camx = 2 * x / (double)(WIN_WDT) - 1; // left side of win = -1, cen = 0, right = 1
-		env->p1->rpx = env->p1->posx;
-		env->p1->rpy = env->p1->posy;
-		env->p1->rdx = env->p1->dx + env->p1->plnx * env->p1->camx;
-		env->p1->rdy = env->p1->dy + env->p1->plny * env->p1->camx;
+		printf("\nstartdrawing\n");
+		printf("posx: %f, posy: %f\n", env->p1->posx, env->p1->posy);
+		printf("env->p1->dy: %f", env->p1->v->dy);
+
+		double		camx;
+
+		camx = 2 * x / (double)(WIN_WDT) - 1; // left side of win = -1, cen = 0, right = 1
+		env->p1->r->rpx = env->p1->posx;
+		env->p1->r->rpy = env->p1->posy;
+		env->p1->r->rdx = env->p1->v->dx + env->p1->v->plnx * camx;
+		env->p1->r->rdy = env->p1->v->dy + env->p1->v->plny * camx;
+
+		printf("mx: %d, my: %d", env->mx, env->my);
+
+		printf("hello new vert line:\nstartposx: %f\nstartposy: %f\nrayposx: %f\nrayposy: %f\nraydirx: %f\nraydiry: %f\n",
+			env->p1->posx, env->p1->posy, env->p1->r->rpx, env->p1->r->rpy, env->p1->r->rdx, env->p1->r->rdy);
 
 
 		// map box pos
-		env->p1->mapx = (int)(env->p1->rpx);
-		env->p1->mapy = (int)(env->p1->rpy);
+		env->p1->mapx = (int)(env->p1->r->rpx);
+		env->p1->mapy = (int)(env->p1->r->rpy);
 
 
 		// length from one x and y side to another x & y side
-		env->p1->ddx = sqrt(1 + (env->p1->rdy * env->p1->rdy)
-			/ (env->p1->rdx * env->p1->rdx));
-		env->p1->ddy = sqrt(1 + (env->p1->rdx * env->p1->rdx)
-			/ (env->p1->rdy * env->p1->rdy));
+		env->p1->d->ddx = sqrt(1 + (env->p1->r->rdy * env->p1->r->rdy)
+			/ (env->p1->r->rdx * env->p1->r->rdx));
+		env->p1->d->ddy = sqrt(1 + (env->p1->r->rdx * env->p1->r->rdx)
+			/ (env->p1->r->rdy * env->p1->r->rdy));
+
+		printf("deltadistx: %f, deltadisty: %f\n", env->p1->d->ddx, env->p1->d->ddy);
 
 
 		int		hit = 0; // wall hit?
@@ -91,41 +148,41 @@ void draw(t_env *env)
 		// calculate side and initial side dist
 // VV
 
-		if (env->p1->rdx < 0)
+		if (env->p1->r->rdx < 0)
 		{
-			env->p1->stepx = -1;
-			env->p1->sdx = (env->p1->rpx - env->p1->mapx) * env->p1->ddx;
+			env->p1->d->stepx = -1;
+			env->p1->d->sdx = (env->p1->r->rpx - env->p1->mapx) * env->p1->d->ddx;
 		}
 		else
 		{
-			env->p1->stepx = 1;
-			env->p1->sdx = (env->p1->mapx + 1.0 - env->p1->rpx) * env->p1->ddx;
+			env->p1->d->stepx = 1;
+			env->p1->d->sdx = (env->p1->mapx + 1.0 - env->p1->r->rpx) * env->p1->d->ddx;
 		}
-		if (env->p1->rdy < 0)
+		if (env->p1->r->rdy < 0)
 		{
-			env->p1->stepy = -1;
-			env->p1->sdy = (env->p1->rpy - env->p1->mapy) * env->p1->ddy;
+			env->p1->d->stepy = -1;
+			env->p1->d->sdy = (env->p1->r->rpy - env->p1->mapy) * env->p1->d->ddy;
 		}
 		else
 		{
-			env->p1->stepy = 1;
-			env->p1->sdy = (env->p1->mapy + 1.0 - env->p1->rpy) * env->p1->ddy;
+			env->p1->d->stepy = 1;
+			env->p1->d->sdy = (env->p1->mapy + 1.0 - env->p1->r->rpy) * env->p1->d->ddy;
 		}
 
 		// DDA
 		while (hit == 0)
 		{
 			// jump to next map square, OR in x-dir, OR in y-dir
-			if (env->p1->sdx < env->p1->sdy)
+			if (env->p1->d->sdx < env->p1->d->sdy)
 			{
-				env->p1->sdx += env->p1->ddx;
-				env->p1->mapx += env->p1->stepx;
+				env->p1->d->sdx += env->p1->d->ddx;
+				env->p1->mapx += env->p1->d->stepx;
 				side = 0;
 			}
 			else
 			{
-				env->p1->sdy += env->p1->ddy;
-				env->p1->mapy += env->p1->stepy;
+				env->p1->d->sdy += env->p1->d->ddy;
+				env->p1->mapy += env->p1->d->stepy;
 				side = 1;
 			}
 			// check if ray has hit a wall
@@ -133,32 +190,47 @@ void draw(t_env *env)
 				hit = 1;
 		}
 
+		printf("\n~\nsidedistx: %f, sidedisty: %f\n", env->p1->d->sdx, env->p1->d->sdy);
+		printf("mapx: %d, mapy: %d\n~\n", env->p1->mapx, env->p1->mapy);
+
 		// distance projected on cam
 		if (side == 0)
-			env->p1->pwd = (env->p1->mapx - env->p1->rpx + (1 - env->p1->stepx) / 2) / env->p1->rdx;
+			env->p1->d->pwd = (env->p1->mapx - env->p1->r->rpx + (1 - env->p1->d->stepx) / 2) / env->p1->r->rdx;
 		else
-			env->p1->pwd = (env->p1->mapy - env->p1->rpy + (1 - env->p1->stepy) / 2) / env->p1->rdy;
+			env->p1->d->pwd = (env->p1->mapy - env->p1->r->rpy + (1 - env->p1->d->stepy) / 2) / env->p1->r->rdy;
+
+		printf("perpendicular wall dis: %f\n", env->p1->d->pwd);
+
+		int		lh;
+		int		dstart;
+		int		dend;
+		int		color;
+
+
 
 		// height of line to draw
-		env->p1->lh = (int)(WIN_HGT / env->p1->pwd);
+		lh = (int)(WIN_HGT / env->p1->d->pwd);
 
 		// calc low and high pixel to fill vert line
-		env->p1->dstart = (-(env->p1->lh)) / 2 + WIN_HGT / 2;
-		if (env->p1->dstart < 0)
-			env->p1->dstart = 0;
-		env->p1->dend = (env->p1->lh / 2 + WIN_HGT / 2);
-		if (env->p1->dend >= WIN_HGT)
-			env->p1->dend = WIN_HGT - 1;
+		dstart = (-(lh)) / 2 + WIN_HGT / 2;
+		if (dstart < 0)
+			dstart = 0;
+		dend = (lh / 2 + WIN_HGT / 2);
+		if (dend >= WIN_HGT)
+			dend = WIN_HGT - 1;
 
 		// choose wall color
-		env->p1->color = wall_color(env->map[env->p1->mapx][env->p1->mapy],
+		color = wall_color(env->map[env->p1->mapx][env->p1->mapy],
 			side);
 
 
 		// draw vert line
 
-		drawline(env, line(point(x, env->p1->dstart), point(x, env->p1->dend)),
-			env->p1->color);
+		printf("line height : %d \n", lh);
+		printf("drawlinefrom(%d, %d) to (%d, %d)\n\n", x, dstart, x, dend);
+
+		drawline(env, line(point(x, dstart), point(x, dend)),
+			color);
 
 		x++;
 	}
@@ -169,22 +241,22 @@ void draw(t_env *env)
 
 void forward(t_env *env)
 {
-	if (env->map[(int)(env->p1->posx + env->p1->dx * env->p1->mvspd)]
+	if (env->map[(int)(env->p1->posx + env->p1->v->dx * env->p1->mvspd)]
 		[(int)(env->p1->posy)] == 0)
-		env->p1->posx += env->p1->dx * env->p1->mvspd;
+		env->p1->posx += env->p1->v->dx * env->p1->mvspd;
 	if (env->map[(int)(env->p1->posx)]
-		[(int)(env->p1->posy + env->p1->dy * env->p1->mvspd)] == 0)
-		env->p1->posy += env->p1->dy * env->p1->mvspd;
+		[(int)(env->p1->posy + env->p1->v->dy * env->p1->mvspd)] == 0)
+		env->p1->posy += env->p1->v->dy * env->p1->mvspd;
 }
 
 void backward(t_env *env)
 {
-	if (env->map[(int)(env->p1->posx - env->p1->dx * env->p1->mvspd)]
+	if (env->map[(int)(env->p1->posx - env->p1->v->dx * env->p1->mvspd)]
 		[(int)(env->p1->posy)] == 0)
-		env->p1->posx -= env->p1->dx * env->p1->mvspd;
+		env->p1->posx -= env->p1->v->dx * env->p1->mvspd;
 	if (env->map[(int)(env->p1->posx)]
-		[(int)(env->p1->posy - env->p1->dy * env->p1->mvspd)] == 0)
-		env->p1->posy -= env->p1->dy * env->p1->mvspd;
+		[(int)(env->p1->posy - env->p1->v->dy * env->p1->mvspd)] == 0)
+		env->p1->posy -= env->p1->v->dy * env->p1->mvspd;
 }
 
 void l_rotate(t_env *env)
@@ -192,16 +264,16 @@ void l_rotate(t_env *env)
 	double	olddx;
 	double	oldplanex;
 
-	olddx = env->p1->dx;
-	oldplanex = env->p1->plnx;
-	env->p1->dx = env->p1->dx * cos(env->p1->rtspd)
-		- env->p1->dy * sin(env->p1->rtspd);
-	env->p1->dy = olddx * sin(-env->p1->rtspd)
-		+ env->p1->dy * cos(env->p1->rtspd);
-	env->p1->plnx = env->p1->plnx * cos(env->p1->rtspd)
-		- env->p1->plny * sin(env->p1->rtspd);
-	env->p1->plny = env->p1->plny * sin(env->p1->rtspd)
-		+ env->p1->plny * cos(env->p1->rtspd);
+	olddx = env->p1->v->dx;
+	oldplanex = env->p1->v->plnx;
+	env->p1->v->dx = env->p1->v->dx * cos(env->p1->rtspd)
+		- env->p1->v->dy * sin(env->p1->rtspd);
+	env->p1->v->dy = olddx * sin(-env->p1->rtspd)
+		+ env->p1->v->dy * cos(env->p1->rtspd);
+	env->p1->v->plnx = env->p1->v->plnx * cos(env->p1->rtspd)
+		- env->p1->v->plny * sin(env->p1->rtspd);
+	env->p1->v->plny = oldplanex * sin(env->p1->rtspd)
+		+ env->p1->v->plny * cos(env->p1->rtspd);
 }
 
 void r_rotate(t_env *env)
@@ -209,16 +281,16 @@ void r_rotate(t_env *env)
 	double	olddx;
 	double	oldplanex;
 
-	olddx = env->p1->dx;
-	oldplanex = env->p1->plnx;
-	env->p1->dx = env->p1->dx * cos(-env->p1->rtspd)
-		- env->p1->dy * sin(-env->p1->rtspd);
-	env->p1->dy = olddx * sin(-env->p1->rtspd)
-		+ env->p1->dy * cos(-env->p1->rtspd);
-	env->p1->plnx = env->p1->plnx * cos(-env->p1->rtspd)
-		- env->p1->plny * sin(-env->p1->rtspd);
-	env->p1->plny = env->p1->plny * sin(-env->p1->rtspd)
-		+ env->p1->plny * cos(-env->p1->rtspd);
+	olddx = env->p1->v->dx;
+	oldplanex = env->p1->v->plnx;
+	env->p1->v->dx = env->p1->v->dx * cos(-env->p1->rtspd)
+		- env->p1->v->dy * sin(-env->p1->rtspd);
+	env->p1->v->dy = olddx * sin(-env->p1->rtspd)
+		+ env->p1->v->dy * cos(-env->p1->rtspd);
+	env->p1->v->plnx = env->p1->v->plnx * cos(-env->p1->rtspd)
+		- env->p1->v->plny * sin(-env->p1->rtspd);
+	env->p1->v->plny = oldplanex * sin(-env->p1->rtspd)
+		+ env->p1->v->plny * cos(-env->p1->rtspd);
 }
 
 int	wolf_hook(t_env *env)
@@ -303,139 +375,62 @@ t_keys	*keyzero(void)
 	return (keys);
 }
 
-
-void checkx(int **map, t_p1 **p1, int x, int y)
+t_vctrs			*vs()
 {
-	if (map[y][x] == 2)
-	{
-		(*p1)->dx = 0.0;
-		(*p1)->plnx = 0.66;
-	}
-	if (map[y][x] == 3)
-	{
-		(*p1)->dx = -1.0;
-		(*p1)->plnx = 0;
-	}
-	if (map[y][x] == 4)
-	{
-		(*p1)->dx = 0.0;
-		(*p1)->plnx = -0.66;
-	}
-	if (map[y][x] == 5)
-	{
-		(*p1)->dx = 1.0;
-		(*p1)->plnx = 0;
-	}
+	t_vctrs		*v;
+
+	v = (t_vctrs *)malloc(sizeof(t_vctrs));
+	v->dx = 0.0;
+	v->dy = 1.0;
+	v->plnx = -0.66;
+	v->plny = 0.0;
+	return (v);
 }
 
-void			findxstart(int **map, t_p1 **p1, int mx, int my)
+t_rays			*rs()
 {
-	int			x;
-	int			y;
+	t_rays		*r;
 
-	x = 0;
-	y = 0;
-	while (y < my)
-	{
-		while (x < mx)
-		{
-			if (map[y][x] >= 2 && map[y][x] <= 5)
-			{
-				checkx(map, p1, x, y);
-				((*p1)->posx) = x;
-			}
-			x++;
-		}
-		y++;
-	}
+	r = (t_rays *)malloc(sizeof(t_rays));
+	r->rpx = 0;
+	r->rpy = 0;
+	r->rdx = 0;
+	r->rdy = 0;
+	return (r);
 }
 
-void checky(int **map, t_p1 **p1, int x, int y)
+t_dists			*ds()
 {
-	if (map[y][x] == 2)
-	{
-		(*p1)->dy = -1;
-		(*p1)->plny = 0;
-	}
-	if (map[y][x] == 3)
-	{
-		(*p1)->dy = 0;
-		(*p1)->plny = 0.66;
-	}
-	if (map[y][x] == 4)
-	{
-		(*p1)->dy = 1;
-		(*p1)->plny = 0;
-	}
-	if (map[y][x] == 5)
-	{
-		(*p1)->dy = 0;
-		(*p1)->plny = -0.66;
-	}
+	t_dists		*d;
+
+	d = (t_dists *)malloc(sizeof(t_dists));
+	d->stepx = 0;
+	d->stepy = 0;
+	d->sdx = 0;
+	d->sdy = 0;
+	d->ddx = 0;
+	d->ddy = 0;
+	d->pwd = 0.0;
+	return (d);
 }
 
-void		findystart(int **map, t_p1 **p1, int mx, int my)
-{
-	int			x;
-	int			y;
-
-	x = 0;
-	y = 0;
-	while (y < my)
-	{
-		while (x < mx)
-		{
-			if (map[y][x] >= 2 && map[y][x] <= 5)
-			{
-				checky(map, p1, x, y);
-				((*p1)->posy) = y;
-			}
-			x++;
-		}
-		y++;
-	}
-}
-
-t_p1			*player(int **map, int x, int y)
+t_p1			*player()
 {
 	t_p1		*p1;
 
 	p1 = (t_p1 *)malloc(sizeof(t_p1));
-	printf("%p\n", p1);
-	printf("%p\n", &p1);
-	printf("%p\n", p1);
-	printf("%p\n", &p1);
-	p1->posx = 0;
-	p1->posy = 0;
-	p1->dx = 0;
-	p1->dy = 0;
-	p1->plnx = 0;
-	p1->plny = 0;
-	p1->camx = 0;
-	p1->rpx = 0;
-	p1->rpy = 0;
-	p1->rdx = 0;
-	p1->rdy = 0;
 
 	p1->mapx = 0;
 	p1->mapy = 0;
-	p1->stepx = 0;
-	p1->stepy = 0;
+	p1->posx = 1.0;
+	p1->posy = 1.0;
+	p1->mvspd = 0;
+	p1->rtspd = 0;
 
-	p1->sdx = 0;
-	p1->sdy = 0;
-	p1->ddx = 0;
-	p1->ddy = 0;
-	p1->pwd = 0;
+	p1->v = vs();
+	p1->r = rs();
+	p1->d = ds();
 
-	p1->lh = 0;
-	p1->dstart = 0;
-	p1->dend = 0;
-
-
-	findxstart(map, &p1, x, y);
-	findystart(map, &p1, x, y);
-	printf("HI\n");
 	return (p1);
 }
 
@@ -454,7 +449,7 @@ int		**testmap(int fd, int *x, int *y)
 	{
 		(*x) = 0;
 		split = ft_strsplit(line, ' ');
-		worldmap[(*y)] = (int *)ft_memalloc(sizeof(int) * 24);
+		worldmap[(*y)] = (int *)ft_memalloc(sizeof(int) * w);
 		while (split[(*x)] != '\0')
 		{
 			worldmap[(*y)][(*x)]= ft_atoi(split[(*x)]);
@@ -480,8 +475,7 @@ t_env	*make_env(void)
 	env->map = testmap(open("./maps/map1", O_RDONLY), &x, &y);
 	env->mx = x;
 	env->my = y;
-	printf("hello%d\n\n", env->map[0][0]);
-	env->p1 = player(env->map, env->mx, env->my);
+	env->p1 = player();
 	env->oldtime = 0;
 	env->time = 0;
 	env->frametime = 0;

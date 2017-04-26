@@ -14,7 +14,7 @@ void		put_image_pixel(t_img image, int x, int y, int color)
 	image.data[b] = (color >> 16) & 0xFF;
 }
 
-t_point		point(float x, float y)
+t_point		point(double x, double y)
 {
 	t_point		a;
 
