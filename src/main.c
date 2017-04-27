@@ -2,51 +2,6 @@
 
 #include "./../includes/wolf3d.h"
 
-
-double			findystart(int **map, int mx, int my)
-{
-	int			x;
-	int			y;
-
-	x = 0;
-	y = 0;
-	while (y < my)
-	{
-		while (x < mx)
-		{
-			if (map[y][x] >= 2 && map[y][x] <= 5)
-			{
-
-				return ((double)y);
-			}
-			x++;
-		}
-		y++;
-	}
-	return (0.0);
-}
-
-
-double		findxstart(int **map, int mx, int my)
-{
-	int			x;
-	int			y;
-
-	x = 0;
-	y = 0;
-	while (y < my)
-	{
-		while (x < mx)
-		{
-			if (map[y][x] >= 2 && map[y][x] <= 5)
-				return ((double)x);
-			x++;
-		}
-		y++;
-	}
-	return (0.0);
-}
-
 int		exit_hook(t_env *env)
 {
 	free(env);
@@ -68,21 +23,15 @@ t_img		make_img(void *mlx)
 
 void image_to(t_env *env)
 {
-	printf("supbebe\n");
 	env->oldtime = env->time;
 	env->time = clock();
 	env->frametime = (env->time - env->oldtime) / CLOCKS_PER_SEC;
-	printf("timeframed\n");
 	mlx_clear_window(env->mlx, env->win);
-	printf("windowclear\n");
 	if (env->image.img)
 		mlx_put_image_to_window(env->mlx, env->win, env->image.img, 0, 0);
-	printf("imageput\n");
 	mlx_string_put(env->mlx, env->win, 0, 0, 0xFFFFFF,
 		ft_itoa((int)(1 / env->frametime)));
-	printf("fps put\n");
 	env->image = make_img(env->mlx);
-	printf("imagemade\n");
 	env->p1->mvspd = (env->frametime * 5.0);
 	env->p1->rtspd = (env->frametime * 3.0);
 }
@@ -106,146 +55,108 @@ int		wall_color(t_env *env, int side)
 	}
 }
 
-
-void draw(t_env *env)
+void	camraydeltadist(t_env *env)
 {
-	int		x;
+	double	camx;
 
-	x = 0;
-	while (x < WIN_WDT)
-	{
-		printf("\nstartdrawing\n");
-		printf("posx: %f, posy: %f\n", env->p1->posx, env->p1->posy);
-		printf("env->p1->dy: %f", env->p1->v->dy);
+	camx = 2 * env->winx / (double)WIN_WDT - 1;
+	env->p1->r->rpx = env->p1->posx;
+	env->p1->r->rpy = env->p1->posy;
+	env->p1->r->rdx = env->p1->v->dx + env->p1->v->plnx * camx;
+	env->p1->r->rdy = env->p1->v->dy + env->p1->v->plny * camx;
+	env->p1->mapx = (int)(env->p1->r->rpx);
+	env->p1->mapy = (int)(env->p1->r->rpy);
+	// length from one x and y side to another x & y side
+	env->p1->d->ddx = sqrt(1 + pow(env->p1->r->rdy, 2)
+		/ pow(env->p1->r->rdx, 2));
+	env->p1->d->ddy = sqrt(1 + pow(env->p1->r->rdx, 2)
+		/ pow(env->p1->r->rdy, 2));
+}
 
-		double		camx;
-
-		camx = 2 * x / (double)WIN_WDT - 1; // left side of win = -1, cen = 0, right = 1
-		env->p1->r->rpx = env->p1->posx;
-		env->p1->r->rpy = env->p1->posy;
-		env->p1->r->rdx = env->p1->v->dx + env->p1->v->plnx * camx;
-		env->p1->r->rdy = env->p1->v->dy + env->p1->v->plny * camx;
-
-		printf("mx: %d, my: %d", env->mx, env->my);
-
-		printf("hello new vert line:\nstartposx: %f\nstartposy: %f\nrayposx: %f\nrayposy: %f\nraydirx: %f\nraydiry: %f\n",
-			env->p1->posx, env->p1->posy, env->p1->r->rpx, env->p1->r->rpy, env->p1->r->rdx, env->p1->r->rdy);
-
-
-		// map box pos
-		env->p1->mapx = (int)(env->p1->r->rpx);
-		env->p1->mapy = (int)(env->p1->r->rpy);
-
-
-		// length from one x and y side to another x & y side
-		env->p1->d->ddx = sqrt(1 + pow(env->p1->r->rdy, 2)
-			/ pow(env->p1->r->rdx, 2));
-		env->p1->d->ddy = sqrt(1 + pow(env->p1->r->rdx, 2)
-			/ pow(env->p1->r->rdy, 2));
-
-		printf("deltadistx: %f, deltadisty: %f\n", env->p1->d->ddx, env->p1->d->ddy);
-
-
-		int		hit = 0; // wall hit?
-		int		side; // which side was hit NorthSouth or EastWest
-
-		// calculate side and initial side dist
-		// VV
-
-		if (env->p1->r->rdx < 0)
-		{
-			env->p1->d->stepx = -1;
-			env->p1->d->sdx = (env->p1->r->rpx - env->p1->mapx) * env->p1->d->ddx;
-		}
-		else
-		{
-			env->p1->d->stepx = 1;
-			env->p1->d->sdx = (env->p1->mapx + 1.0 - env->p1->r->rpx) * env->p1->d->ddx;
-		}
-		if (env->p1->r->rdy < 0)
-		{
-			env->p1->d->stepy = -1;
-			env->p1->d->sdy = (env->p1->r->rpy - env->p1->mapy) * env->p1->d->ddy;
-		}
-		else
-		{
-			env->p1->d->stepy = 1;
-			env->p1->d->sdy = (env->p1->mapy + 1.0 - env->p1->r->rpy) * env->p1->d->ddy;
-		}
-
-		// DDA
-		while (hit == 0)
-		{
-			// jump to next map square, OR in x-dir, OR in y-dir
-			if (env->p1->d->sdx < env->p1->d->sdy)
+void stepndist(t_env *env)
+{
+			if (env->p1->r->rdx < 0)
 			{
-				env->p1->d->sdx += env->p1->d->ddx;
-				env->p1->mapx += env->p1->d->stepx;
-				side = 0;
+				env->p1->d->stepx = -1;
+				env->p1->d->sdx = (env->p1->r->rpx - env->p1->mapx) * env->p1->d->ddx;
 			}
 			else
 			{
-				env->p1->d->sdy += env->p1->d->ddy;
-				env->p1->mapy += env->p1->d->stepy;
-				side = 1;
+				env->p1->d->stepx = 1;
+				env->p1->d->sdx = (env->p1->mapx + 1.0 - env->p1->r->rpx) * env->p1->d->ddx;
 			}
-			// check if ray has hit a wall
-			if (env->map[env->p1->mapx][env->p1->mapy] == 1)
-				hit = 1;
-		}
-
-		printf("\n~\nsidedistx: %f, sidedisty: %f\n", env->p1->d->sdx, env->p1->d->sdy);
-		printf("mapx: %d, mapy: %d\n~\n", env->p1->mapx, env->p1->mapy);
-
-		// distance projected on cam
-		if (side == 0)
-			env->p1->d->pwd = (env->p1->mapx - env->p1->r->rpx
-				+ (1 - env->p1->d->stepx) / 2) / env->p1->r->rdx;
-		else
-			env->p1->d->pwd = (env->p1->mapy - env->p1->r->rpy
-				+ (1 - env->p1->d->stepy) / 2) / env->p1->r->rdy;
-
-
-		printf("perpendicular wall dis: %f\n", env->p1->d->pwd);
-
-
-		int		lh;
-		int		dstart;
-		int		dend;
-		int		color;
-
-
-
-		// height of line to draw
-		lh = (int)(WIN_HGT / env->p1->d->pwd);
-
-		// calc low and high pixel to fill vert line
-		dstart = (-(lh)) / 2 + WIN_HGT / 2;
-		if (dstart < 0)
-			dstart = 0;
-		dend = (lh / 2 + WIN_HGT / 2);
-		if (dend >= WIN_HGT)
-			dend = WIN_HGT - 1;
-
-		// choose wall color
-		color = wall_color(env, side);
-
-
-		// draw vert line
-
-		printf("line height : %d \n", lh);
-		printf("drawlinefrom(%d, %d) to (%d, %d)\n\n", x, dstart, x, dend);
-
-		drawline(env, line(point(x, dstart), point(x, dend)), color);
-		drawline(env, line(point(x, dstart), point(x, 0)), 0x992222); /* the ceiling is the roof */
-		drawline(env, line(point(x, dend), point(x, WIN_HGT)), 0x229922); /* the floor is the ground */
-
-		x++;
-	}
-
-
+			if (env->p1->r->rdy < 0)
+			{
+				env->p1->d->stepy = -1;
+				env->p1->d->sdy = (env->p1->r->rpy - env->p1->mapy) * env->p1->d->ddy;
+			}
+			else
+			{
+				env->p1->d->stepy = 1;
+				env->p1->d->sdy = (env->p1->mapy + 1.0 - env->p1->r->rpy) * env->p1->d->ddy;
+			}
 }
 
+void dda_pwd(t_env *env)
+{
+	env->p1->d->hit = 0;
+	while (env->p1->d->hit == 0)
+	{
+		if (env->p1->d->sdx < env->p1->d->sdy)
+		{
+			env->p1->d->sdx += env->p1->d->ddx;
+			env->p1->mapx += env->p1->d->stepx;
+			env->p1->d->side = 0;
+		}
+		else
+		{
+			env->p1->d->sdy += env->p1->d->ddy;
+			env->p1->mapy += env->p1->d->stepy;
+			env->p1->d->side = 1;
+		}
+		if (env->map[env->p1->mapx][env->p1->mapy] == 1)
+			env->p1->d->hit = 1;
+	}
+	if (env->p1->d->side == 0)
+		env->p1->d->pwd = (env->p1->mapx - env->p1->r->rpx
+			+ (1 - env->p1->d->stepx) / 2) / env->p1->r->rdx;
+	else
+		env->p1->d->pwd = (env->p1->mapy - env->p1->r->rpy
+			+ (1 - env->p1->d->stepy) / 2) / env->p1->r->rdy;
+}
+
+void drawwallline(t_env *env)
+{
+	int		lh;
+	int		dstart;
+	int		dend;
+	int		color;
+
+	lh = (int)(WIN_HGT / env->p1->d->pwd);
+	dstart = (-(lh)) / 2 + WIN_HGT / 2;
+	if (dstart < 0)
+		dstart = 0;
+	dend = (lh / 2 + WIN_HGT / 2);
+	if (dend >= WIN_HGT)
+		dend = WIN_HGT - 1;
+	color = wall_color(env, env->p1->d->side);
+	drawline(env, line(point(env->winx, dstart), point(env->winx, dend)), color);
+	drawline(env, line(point(env->winx, dstart), point(env->winx, 0)), 0x992222); /* the ceiling is the roof */
+	drawline(env, line(point(env->winx, dend), point(env->winx, WIN_HGT)), 0x229922); /* the floor is the ground */
+}
+
+void draw(t_env *env)
+{
+	env->winx = 0;
+	while (env->winx < WIN_WDT)
+	{
+		camraydeltadist(env);
+		stepndist(env);
+		dda_pwd(env);
+		drawwallline(env);
+		env->winx++;
+	}
+}
 
 void forward(t_env *env)
 {
@@ -325,9 +236,7 @@ void r_rotate(t_env *env)
 
 int	wolf_hook(t_env *env)
 {
-	printf("HAI\n\n\n\n");
 	image_to(env);
-	printf("ello\n\n");
 	draw(env);
 	if (env->keys->w)
 		forward(env);
@@ -346,7 +255,6 @@ int	wolf_hook(t_env *env)
 
 int		key_press(int key, t_env *env)
 {
-	printf("key press: %d", key);
 	if (key == 13)
 		env->keys->w = 1;
 	if (key == 0)
@@ -388,8 +296,6 @@ void wolfy(t_env *env)
 {
 	env->mlx = mlx_init();
 	env->win = mlx_new_window(env->mlx, WIN_WDT, WIN_HGT, "chansen - Wolf3d");
-	printf("heyeyeyeye\n\n");
-	printf("key: %d", env->keys->w);
 	mlx_loop_hook(env->mlx, wolf_hook, env);
 	mlx_hook(env->win, 2, 0, key_press, env);
 	mlx_hook(env->win, 3, 0, key_release, env);
@@ -442,6 +348,8 @@ t_dists			*ds()
 	d = (t_dists *)malloc(sizeof(t_dists));
 	d->stepx = 0;
 	d->stepy = 0;
+	d->hit = 0;
+	d->side = 0;
 	d->sdx = 0;
 	d->sdy = 0;
 	d->ddx = 0;
@@ -509,8 +417,7 @@ t_env	*make_env(void)
 		exit_hook(env);
 	env->keys = keyzero();
 	env->map = testmap(open("./maps/map1", O_RDONLY), &x, &y);
-	env->mx = x;
-	env->my = y;
+	env->winx = 0;
 	env->p1 = player();
 	env->oldtime = 0;
 	env->time = 0;

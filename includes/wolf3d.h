@@ -79,6 +79,8 @@ typedef struct	s_dists
 {
 	int			stepx; // for direction to step in (+1 or -1)
 	int			stepy;
+	int			hit;
+	int			side;
 	double		ddx; // delta
 	double		ddy;
 	double		sdx; // side
@@ -88,8 +90,8 @@ typedef struct	s_dists
 
 typedef struct	s_p1
 {
-	int			mapx; // map int cord for current box
-	int			mapy;
+	int				mapx; // map int cord for current box
+	int				mapy;
 	double		posx; // player position
 	double		posy;
 	double		mvspd; // move and rot speed
@@ -112,8 +114,7 @@ typedef struct	s_keys
 typedef struct	s_env
 {
 	int			**map;
-	int			mx;
-	int			my;
+	int			winx;
 	void		*mlx;
 	void 		*win;
 	t_keys		*keys;
