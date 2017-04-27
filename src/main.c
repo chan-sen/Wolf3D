@@ -87,18 +87,23 @@ void image_to(t_env *env)
 	env->p1->rtspd = (env->frametime * 3.0);
 }
 
-int		wall_color(int gridnum, int side)
+int		wall_color(t_env *env, int side)
 {
-	int	color;
-
-	color = 0;
-	if (gridnum == 1)
+	if (side == 1)
 	{
-		color = 0x0000FF;
-		if (side == 1)
-			color = color / 2;
+		if ((env->p1->d->stepx == -1 && env->p1->d->stepy == -1)
+			|| (env->p1->d->stepx == 1 && env->p1->d->stepy == -1))
+			return (0x0000FF);
+		else
+			return (0x00FFFF);
 	}
-	return (color);
+	else
+	{
+		if ((env->p1->d->stepx == -1 && env->p1->d->stepy == -1) || (env->p1->d->stepx == -1 && env->p1->d->stepy == 1))
+			return (0xFFFF00);
+		else
+			return (0x800080);
+	}
 }
 
 
@@ -223,7 +228,7 @@ void draw(t_env *env)
 			dend = WIN_HGT - 1;
 
 		// choose wall color
-		color = wall_color(env->map[env->p1->mapx][env->p1->mapy], side);
+		color = wall_color(env, side);
 
 
 		// draw vert line
@@ -232,8 +237,8 @@ void draw(t_env *env)
 		printf("drawlinefrom(%d, %d) to (%d, %d)\n\n", x, dstart, x, dend);
 
 		drawline(env, line(point(x, dstart), point(x, dend)), color);
-		drawline(env, line(point(x, dstart), point(x, 0)), 0x992222); // the ceiling is the roof
-		drawline(env, line(point(x, dend), point(x, WIN_HGT)), 0x229922); // the floor is the ground
+		drawline(env, line(point(x, dstart), point(x, 0)), 0x992222); /* the ceiling is the roof */
+		drawline(env, line(point(x, dend), point(x, WIN_HGT)), 0x229922); /* the floor is the ground */
 
 		x++;
 	}
@@ -336,16 +341,12 @@ int	wolf_hook(t_env *env)
 		l_rotate(env);
 	if (env->keys->d)
 		r_rotate(env);
-	// if (env->keys->spc)
-	// 	interact(env);
 	return (1);
 }
 
 int		key_press(int key, t_env *env)
 {
 	printf("key press: %d", key);
-	if (key == 49)
-		env->keys->spc = 1;
 	if (key == 13)
 		env->keys->w = 1;
 	if (key == 0)
@@ -368,8 +369,6 @@ int		key_release(int	key, t_env *env)
 		mlx_destroy_window(env->mlx, env->win);
 		exit(0);
 	}
-	if (key == 49)
-		env->keys->spc = 0;
 	if (key == 13)
 		env->keys->w = 0;
 	if (key == 0)
@@ -394,7 +393,6 @@ void wolfy(t_env *env)
 	mlx_loop_hook(env->mlx, wolf_hook, env);
 	mlx_hook(env->win, 2, 0, key_press, env);
 	mlx_hook(env->win, 3, 0, key_release, env);
-	// mlx_hook(env->win, 6, 0, wolf_mouse, env);
 	mlx_hook(env->win, 17, 0, exit_hook, env);
 	mlx_loop(env->mlx);
 }
@@ -404,7 +402,6 @@ t_keys	*keyzero(void)
 	t_keys		*keys;
 
 	keys = (t_keys *)malloc(sizeof(t_keys));
-	keys->spc = 0;
 	keys->w = 0;
 	keys->a = 0;
 	keys->s = 0;
@@ -449,7 +446,7 @@ t_dists			*ds()
 	d->sdy = 0;
 	d->ddx = 0;
 	d->ddy = 0;
-	d->pwd = 0.0;
+	d->pwd = 0;
 	return (d);
 }
 
@@ -481,8 +478,8 @@ int		**testmap(int fd, int *x, int *y)
 	int		w;
 	int		h;
 
-	w = 12;
-	h = 12;
+	w = 36;
+	h = 36;
 	worldmap = (int **)ft_memalloc(sizeof(int *) * h);
 	while (get_next_line(fd, &line))
 	{

@@ -101,7 +101,6 @@ typedef struct	s_p1
 
 typedef struct	s_keys
 {
-	int			spc;
 	int			w;
 	int			a;
 	int			s;
