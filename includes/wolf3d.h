@@ -106,6 +106,8 @@ typedef struct	s_keys
 	int			a;
 	int			s;
 	int			d;
+	int			q;
+	int			e;
 }				t_keys;
 
 typedef struct	s_env
