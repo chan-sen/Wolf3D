@@ -1,8 +1,18 @@
-
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: chansen <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2017/04/20 21:07:47 by chansen           #+#    #+#             */
+/*   Updated: 2017/04/20 21:07:50 by chansen          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "./../includes/wolf3d.h"
 
-void image_to(t_env *env)
+void		image_to(t_env *env)
 {
 	env->oldtime = env->time;
 	env->time = clock();
@@ -17,7 +27,7 @@ void image_to(t_env *env)
 	env->p1->rtspd = (env->frametime * 3.0);
 }
 
-int	wolf_hook(t_env *env)
+int			wolf_hook(t_env *env)
 {
 	image_to(env);
 	woof(env);
@@ -33,7 +43,7 @@ int	wolf_hook(t_env *env)
 	return (1);
 }
 
-void wolfy(t_env *env)
+void		wolfy(t_env *env)
 {
 	env->mlx = mlx_init();
 	env->win = mlx_new_window(env->mlx, WIN_WDT, WIN_HGT, "chansen - Wolf3d");
@@ -44,7 +54,7 @@ void wolfy(t_env *env)
 	mlx_loop(env->mlx);
 }
 
-void wolf3d(void)
+void		wolf3d(void)
 {
 	t_env	*env;
 
@@ -52,7 +62,7 @@ void wolf3d(void)
 	wolfy(env);
 }
 
-int		main()
+int			main(void)
 {
 	wolf3d();
 	return (0);

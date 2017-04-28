@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   keysnmisc.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: chansen <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2017/04/26 12:17:00 by chansen           #+#    #+#             */
+/*   Updated: 2017/04/26 12:17:00 by chansen          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "./../includes/wolf3d.h"
 
@@ -25,7 +36,7 @@ int		key_press(int key, t_env *env)
 	return (key);
 }
 
-int		key_release(int	key, t_env *env)
+int		key_release(int key, t_env *env)
 {
 	if (key == 53)
 	{
@@ -79,7 +90,7 @@ int		**testmap(int fd, int *x, int *y)
 		worldmap[(*y)] = (int *)ft_memalloc(sizeof(int) * w);
 		while (split[(*x)] != '\0')
 		{
-			worldmap[(*y)][(*x)]= ft_atoi(split[(*x)]);
+			worldmap[(*y)][(*x)] = ft_atoi(split[(*x)]);
 			(*x)++;
 		}
 		(*y)++;

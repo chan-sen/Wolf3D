@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   make.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: chansen <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2017/04/26 12:07:00 by chansen           #+#    #+#             */
+/*   Updated: 2017/04/26 12:07:00 by chansen          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "./../includes/wolf3d.h"
 
@@ -78,10 +89,8 @@ void		drawwallline(t_env *env)
 	int		start;
 	int		end;
 	int		color;
-	int		roof;
 	int		flor;
 
-	roof = 0x00FFFF;
 	flor = 0x229922;
 	lh = (int)(WIN_HGT / env->p1->d->pwd);
 	start = (-(lh)) / 2 + WIN_HGT / 2;
@@ -92,10 +101,8 @@ void		drawwallline(t_env *env)
 		end = WIN_HGT - 1;
 	color = wall_color(env, env->p1->d->side);
 	drawline(env, line(point(env->winx, start), point(env->winx, end)), color);
-	drawline(env, line(point(env->winx, start), point(env->winx, 0)), roof);
-	/* the ceiling is the roof */
+	drawline(env, line(point(env->winx, start), point(env->winx, 0)), 0x00FFFF);
 	drawline(env, line(point(env->winx, end), point(env->winx, WIN_HGT)), flor);
-	/* the floor is the ground */
 }
 
 void		woof(t_env *env)
