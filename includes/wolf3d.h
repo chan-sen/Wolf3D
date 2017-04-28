@@ -126,13 +126,42 @@ typedef struct	s_env
 
 }				t_env;
 
-int		**testmap(int fd, int *x, int *y);
+int			exit_hook(t_env *env);
+int			key_press(int key, t_env *env);
+int			key_release(int	key, t_env *env);
+t_keys		*keyzero(void);
+int			**testmap(int fd, int *x, int *y);
 
+t_vctrs		*vs(void);
+t_rays		*rs(void);
+t_dists		*ds(void);
+t_p1		*player(void);
+t_env		*make_env(void);
+
+t_img		make_img(void *mlx);
 void		put_image_pixel(t_img image, int x, int y, int color);
 t_point		point(double x, double y);
 t_line		line(t_point p1, t_point p2);
 void		drawline(t_env *map, t_line line, int color);
 
+void		forward(t_env *env);
+void 		backward(t_env *env);
+void		sliiide(t_env *env);
+void		l_rotate(t_env *env);
+void		r_rotate(t_env *env);
+
+int			wall_color(t_env *env, int side);
+
+void		camraydeltadist(t_env *env);
+void		stepndist(t_env *env);
+void		dda_pwd(t_env *env);
+void		drawwallline(t_env *env);
+void		woof(t_env *env);
+
+void		image_to(t_env *env);
+int			wolf_hook(t_env *env);
+void		wolfy(t_env *env);
+void		wolf3d(void);
 
 
 #endif

@@ -1,6 +1,17 @@
 
 #include "./../includes/wolf3d.h"
 
+t_img		make_img(void *mlx)
+{
+	t_img	image;
+
+	image.img = mlx_new_image(mlx, WIN_WDT, WIN_HGT);
+	image.data = mlx_get_data_addr(image.img, &image.bits,
+		&image.sizeline, &image.endian);
+	image.height = WIN_HGT;
+	image.width = WIN_WDT;
+	return (image);
+}
 
 void		put_image_pixel(t_img image, int x, int y, int color)
 {
@@ -25,7 +36,7 @@ t_point		point(double x, double y)
 
 t_line		line(t_point p1, t_point p2)
 {
-	t_line		line;
+	t_line	line;
 
 	line.d = sqrt(pow((p2.x - p1.x), 2) + pow((p2.y - p1.y), 2));
 	if (line.d < 0)
